@@ -12,6 +12,8 @@ dotenv.config(); // process.env => .env 파일을 읽음
 const { sequelize } = require('./models');
 const passportConfig = require('./passport');
 const authRouter = require('./routers/auth');
+const userRouter = require('./routers/user');
+const { isLoggedIn } = require('./middlewares');
 
 const app = express();
 passportConfig(); // 패스포트 설정
@@ -28,7 +30,7 @@ app.use(morgan('dev')); // 추가적인 로그
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(cookieParser(process.env.COOKIE_SECRET)); // 암호화된 서명 처리를 위한 임의의 문자 COOKIE_SECRET 사용
 app.use(session({
     resave: false, // 수정 사항 시 세션 다시 설정 여부
     saveUninitialized: false, // 세션에 저장할 사항 없더라도 처음부터 생성할 것인지
@@ -41,12 +43,8 @@ app.use(session({
 app.use(passport.initialize()); // req.session 객체에 passport 정보 저장
 app.use(passport.session()); // express-session에서 객체 생성
 
-app.get('/', (req, res) => {
-    console.log('Initial page');
-    res.send('Initial page');
-});
-
-app.use('/api/auth', authRouter); // req.user
+app.use('/api/auth', authRouter);
+app.use('/api/user', isLoggedIn, userRouter);
 
 app.use((req, res, next) => {
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다`);

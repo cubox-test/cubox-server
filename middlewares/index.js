@@ -8,10 +8,10 @@ exports.isLoggedIn = (req, res, next) => {
 };
 
 exports.isNotLoggedIn = (req, res, next) => {
-    if( !req.isAuthenticated()) {
+    if (!req.isAuthenticated()) {
         next();
     } else {
-        res.status(403).send('로그인 중');
-        console.log('로그인 중');
+        res.status(403).send('로그인 상태입니다');
+        console.log('로그인 상태입니다');
     }
 };

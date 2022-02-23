@@ -5,21 +5,27 @@ const axios = require('axios');
 const User = require('../models/user');
 
 exports.signup = async(req, res, next) => {
-    const {email, name, password, unique_key} = req.body;
-    console.log("email : " + email + ', password : '+ password + ", name : " + name + "\nunique_key : " + unique_key);
+    const {email, password, name, nickName, unique_key} = req.body;
+    console.log("email : " + email + ', password : '+ password + ", name : " + name + 
+                "\nnickName : " + nickName + "unique_key : " + unique_key);
     try {
         const exId = await User.findOne({ where : { email }});
+        const exNick = await User.findOne({ where : { nickName }});
 
         if (exId) {
             console.log('아이디 중복 오류');
             return res.status(400).send('이미 회원인 상태입니다');
-        } 
+        } else if (exNick) {
+            console.log('중복된 닉네임이 있습니다');
+            return res.status(400).send('중복된 닉네임이 있습니다');
+        }
 
         const hash = await bcrypt.hash(password, 10); // 2^12번 해싱 라운드(salt round - 2번째 인자) => Cost
         await User.create({
             email,
-            name,
             password: hash,
+            name,
+            nickName,
             unique_key
         });
         
@@ -50,6 +56,7 @@ exports.certifications = async(req, res, next) => {
         const { access_token } = getToken.data.response; // 인증 토큰
         console.log("token : ", access_token);
         console.log("imp_uid : ", imp_uid);
+        
         // 정보 조회
         const getCertifications = await axios({
             url: `https://api.iamport.kr/certifications/${imp_uid}`,
@@ -58,17 +65,18 @@ exports.certifications = async(req, res, next) => {
         }); 
         const certificationInfo = getCertifications.data.response; // 인증 정보
 
+        console.log(certificationInfo);
         const { unique_key, unique_in_site, name, gender, birth } = certificationInfo;
         console.log('이름 : ' + name + ', 성별 : ' + gender + ', 생일일자 : ' + birth);
         console.log('Unique key : ' + unique_key + ', unique_in_site : ' + unique_in_site);
 
-        exCellPhone = await User.fineOne({ where : { unique_key }})
-        if (exCellPhone){
+        const exJoin = await User.findOne({ where : { unique_key }});
+        if (exJoin){
             console.log("핸드폰 중복 인증 불가");
             return res.status(400).send("핸드폰 중복 인증 불가");
         }
         console.log("핸드폰 인증 성공");
-        return res.status(201).send({ unique_key : unique_key});
+        return res.status(201).send({ unique_key : unique_key, name : name });
 
     } catch(err){
         console.log('certification error');
@@ -91,8 +99,8 @@ exports.login = async (req, res, next) => {
                 console.error(loginError);
                 return next(loginError);
             }
-            console.log(`${user.name}님 로그인 성공`);
-            return res.status(201).send(`${user.name}님 로그인 성공`);
+            console.log(`${user.nickName}님 로그인 성공`);
+            return res.status(201).send(`${user.nickName}님 로그인 성공`);
         })
     })(req, res, next)
 };
@@ -102,4 +110,13 @@ exports.logout = async (req, res) => {
     req.session.destroy();
     console.log('로그아웃 성공');
     return res.status(200).send('로그아웃 성공');
+};
+
+exports.me = async (req, res) => {
+    if (req.isAuthenticated()) {
+        // console.log("auth/me : true");
+        return res.status(200).send(true);
+    }
+    // console.log("auth/me : false");
+    return res.status(400).send(false);
 };
