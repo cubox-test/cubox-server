@@ -14,5 +14,6 @@ router.post('/certifications', Controller.certifications); // 휴대폰 인증 A
 router.post('/login', isNotLoggedIn, Controller.login); // 로그인
 router.get('/logout', isLoggedIn, Controller.logout); // 로그아웃
 router.get('/me', Controller.me); // 로그인 상태 확인
+router.post('/mail', isNotLoggedIn, Controller.mail); // 메일 형식 확인
 
 module.exports = router; 

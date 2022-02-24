@@ -3,6 +3,11 @@ const Sequelize = require('sequelize');
 module.exports = class User extends Sequelize.Model {
     static init(sequelize){
         return super.init({
+            userId: {
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
+                primaryKey: true
+            },
             email: {
                 type: Sequelize.STRING(30),
                 allowNull: false,
@@ -10,7 +15,6 @@ module.exports = class User extends Sequelize.Model {
             password: {
                 type: Sequelize.STRING(100),
                 allowNull: false,
-                // unique: true,
             },
             name: {
                 type: Sequelize.STRING(5),
@@ -24,11 +28,25 @@ module.exports = class User extends Sequelize.Model {
             unique_key: {
                 type: Sequelize.STRING(100),
                 allowNull: false,
-                primaryKey: true,
+                unique: true
+            },
+            useragent: {
+                type: Sequelize.STRING(15),
+                allowNull: false,
+            },
+            signed: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
+            },
+            foreigner: {
+                type: Sequelize.BOOLEAN,
+            },
+            age: {
+                type: Sequelize.INTEGER(2),
             }
         }, {
             sequelize,
-            timestamps: false, // createdAt, updatedAt, deleteAt 생성(true)
+            timestamps: true, // createdAt, updatedAt, deleteAt 생성(true)
             underscored: false, 
             modelName: 'User',
             tableName: 'users',
@@ -39,6 +57,6 @@ module.exports = class User extends Sequelize.Model {
     }
 
     static associate(db){
-        // 테이블 관계 생성
+        db.User.belongsTo(db.Role, { foreignKey: 'roleId', targetKey: 'id'});
     };
 };
