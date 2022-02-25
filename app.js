@@ -13,6 +13,7 @@ const { sequelize } = require('./models');
 const passportConfig = require('./passport');
 const authRouter = require('./routers/auth');
 const userRouter = require('./routers/user');
+const supervisorRouter = require('./routers/supervisor');
 const { isLoggedIn } = require('./middlewares');
 
 const app = express();
@@ -48,6 +49,7 @@ app.use(passport.session()); // express-session에서 객체 생성
 
 app.use('/api/auth', authRouter);
 app.use('/api/user', isLoggedIn, userRouter);
+app.use('/api/supervisor', isLoggedIn, supervisorRouter);
 
 app.use((req, res, next) => {
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다`);

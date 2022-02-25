@@ -10,10 +10,11 @@ exports.GetUserInfo = async (req, res, next) => {
             attributes : ['email', 'name', 'nickName', 'foreigner', 'age'],
             include : [{
                 model: Role,
-                attributes : ['description']
+                attributes : ['name']
             }],
         });
         
+        console.log(user);
         console.log("유저 정보 조회");
         return res.status(200).send(user);
 

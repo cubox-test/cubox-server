@@ -46,11 +46,11 @@ module.exports = class User extends Sequelize.Model {
             }
         }, {
             sequelize,
-            timestamps: true, // createdAt, updatedAt, deleteAt 생성(true)
+            timestamps: false, // createdAt, updatedAt 생성(true)
             underscored: false, 
             modelName: 'User',
             tableName: 'users',
-            paranoid: false, // createdAt, updatedAt, deletedAt 생성(true)
+            paranoid: false, // deletedAt 생성(true)
             charset: 'utf8',
             collate: 'utf8_general_ci',
         });
@@ -58,5 +58,7 @@ module.exports = class User extends Sequelize.Model {
 
     static associate(db){
         db.User.belongsTo(db.Role, { foreignKey: 'roleId', targetKey: 'id'});
+        db.User.hasMany(db.Supervisor, {foreignKey:'userId', sourceKey: 'userId'});
+        db.User.hasMany(db.Worker, {foreignKey:'userId', sourceKey: 'userId'});
     };
 };

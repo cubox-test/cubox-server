@@ -3,11 +3,11 @@ const Sequelize = require('sequelize');
 module.exports = class Center extends Sequelize.Model {
     static init(sequelize){
         return super.init({
-            description: {
+            name: {
                 type: Sequelize.STRING(10),
                 allowNull: false,
                 unique: true
-            }
+            },
         }, {
             sequelize,
             timestamps: false, // createdAt, updatedAt, deleteAt 생성(true)
@@ -21,7 +21,8 @@ module.exports = class Center extends Sequelize.Model {
     }
 
     static associate(db){
-        db.Center.hasMany(db.Supervisor, {foreignKey:'SupervisorId', sourceKey: 'id'});
-        db.Center.hasMany(db.Worker, {foreignKey:'SupervisorId', sourceKey: 'id'});
+        db.Center.belongsTo(db.Supervisor, {foreignKey:'supervisorId', targetkey: 'supervisorId'});
+        db.Center.hasMany(db.Worker, {foreignKey:'centerId', sourceKey: 'id'});
+        db.Center.hasMany(db.Job, {foreignKey:'centerId', sourceKey: 'id'});
     };
 };
