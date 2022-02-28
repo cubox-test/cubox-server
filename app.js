@@ -13,11 +13,10 @@ const { sequelize } = require('./models');
 const passportConfig = require('./passport');
 const authRouter = require('./routers/auth');
 const userRouter = require('./routers/user');
-const supervisorRouter = require('./routers/supervisor');
+const centerRouter = require('./routers/center');
 const { isLoggedIn } = require('./middlewares');
 
 const app = express();
-const today = new Date();
 passportConfig(); // 패스포트 설정
 app.set('port', process.env.PORT || 8001); // 전역적으로 port 번호 생성
 
@@ -49,7 +48,7 @@ app.use(passport.session()); // express-session에서 객체 생성
 
 app.use('/api/auth', authRouter);
 app.use('/api/user', isLoggedIn, userRouter);
-app.use('/api/supervisor', isLoggedIn, supervisorRouter);
+app.use('/api/center', isLoggedIn, centerRouter);
 
 app.use((req, res, next) => {
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다`);

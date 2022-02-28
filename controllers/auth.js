@@ -4,22 +4,18 @@ const axios = require('axios');
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 const today = new Date();
+const { v4 } = require('uuid');
 
 dotenv.config();
 
-const User = require('../models/user');
+const { User, Supervisor, Worker } = require('../models');
 
 exports.signup = async(req, res, next) => {
     const {email, password, name, nickName, unique_key, roleId, useragent, signed, foreigner, age} = req.body;
-    console.log("email : " + email + ', password : '+ password + ", name : " + name + 
-                "\nnickName : " + nickName + "unique_key : " + unique_key);
     try {
         const exId = await User.findOne({ where : { email }});
         const exNick = await User.findOne({ where : { nickName }});
-/* 
-        if (!validator.isEmail(email)){
-            
-        } */
+        
         if (exId) {
             console.log('아이디 중복 오류');
             return res.status(400).send('이미 회원인 상태입니다');
@@ -28,8 +24,10 @@ exports.signup = async(req, res, next) => {
             return res.status(400).send('중복된 닉네임이 있습니다');
         } 
 
+        const userId = v4();
         const hash = await bcrypt.hash(password, 10); // 2^12번 해싱 라운드(salt round - 2번째 인자) => Cost
         await User.create({
+            userId: userId,
             email,
             password: hash,
             name,
@@ -41,9 +39,24 @@ exports.signup = async(req, res, next) => {
             foreigner,
             age
         });
+
+        if (roleId == 1) {
+            await Worker.create({
+                workerId : userId,
+                userId : userId,
+            });
+        } else if (roleId == 2) {
+            await Supervisor.create({
+                supervisorId : userId,
+                userId : userId,
+            });
+        } else {
+            console.log("회원가입 때 워커, 관리자 둘 중 하나 선택");
+            res.status(403).send({"message": "회원가입 시 워커, 관리자 둘 중 하나 선택해야함"});
+        }
         
         console.log('회원가입 완료');
-        return res.status(201).send('회원가입 성공');
+        return res.status(201).send({"message": "회원가입 성공"});
     } catch (err) {
         console.log('signup error');
         console.error(err);
@@ -116,7 +129,7 @@ exports.login = async (req, res, next) => {
                 return next(loginError);
             }
             console.log(`${user.nickName}님 로그인 성공`);
-            return res.status(201).send(`${user.nickName}님 로그인 성공`);
+            return res.status(201).send({userId: user.userId});
         })
     })(req, res, next)
 };
@@ -125,16 +138,14 @@ exports.logout = async (req, res) => {
     req.logout();
     req.session.destroy();
     console.log('로그아웃 성공');
-    return res.status(200).send('로그아웃 성공');
+    return res.status(200).send({"message" : "로그아웃 성공"});
 };
 
 exports.me = async (req, res, next) => {
     try{
         if (req.isAuthenticated()) {
-            // console.log("auth/me : true");
-            return res.status(200).send(true);
+            return res.status(200).send({roleId: req.user.roleId, userId: req.user.userId});
         }
-        // console.log("auth/me : false");
         return res.status(400).send(false);
     } catch (err) {
         console.log("auth/me error");

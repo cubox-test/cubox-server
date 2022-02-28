@@ -34,7 +34,7 @@ exports.UpdateUserInfo = async (req, res, next) => {
         }, {where: {nickName: req.params.nickName}})
         
         console.log("사용자 정보 변경");
-        return res.status(201).send('사용자 정보 변경');
+        return res.status(201).send({"message": "사용자 정보 변경"});
 
     } catch (err) {
         console.log("UpdateUserInfo error");
@@ -48,7 +48,7 @@ exports.DeleteUser = async (req, res, next) => {
             where: { nickName: req.params.nickName },
         });
         console.log(`${req.params.nickName}님 회원 정보 삭제`);
-        return res.status(201).send(`${req.params.nickName}님 회원 정보 삭제`);
+        return res.status(201).send({"message" : `${req.params.nickName}님 회원 정보 삭제`});
     } catch (err) {
         console.log("DeleteUser error \n");
         next(err);

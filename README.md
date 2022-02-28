@@ -1,2 +1,2 @@
-# cubox-server
-크라우드소싱 페이지 서버 관리
+# js-testserver
+크라우드 소싱 테스트 서버

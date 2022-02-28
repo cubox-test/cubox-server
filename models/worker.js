@@ -4,8 +4,7 @@ module.exports = class Worker extends Sequelize.Model {
     static init(sequelize){
         return super.init({
             workerId: {
-                type: Sequelize.INTEGER,
-                autoIncrement: true,
+                type: Sequelize.STRING(70),
                 primaryKey: true
             },
         }, {
