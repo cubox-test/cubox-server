@@ -20,8 +20,9 @@ module.exports = class Worker extends Sequelize.Model {
     }
 
     static associate(db){
-        db.Worker.belongsTo(db.Center, { foreignKey: 'centerId', targetKey: 'id'});
-        db.Worker.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId'});
-        db.Worker.hasMany(db.Job, { foreignKey: 'workerId', sourceKey: 'workerId'} )
+        db.Worker.belongsTo(db.Center, {foreignKey: 'centerId', targetKey: 'id'});
+        db.Worker.belongsTo(db.User, {foreignKey: 'userId', targetKey: 'userId'});
+        db.Worker.hasMany(db.Job, {foreignKey: 'workerId', sourceKey: 'workerId'})
+        db.Worker.belongsTo(db.Project, {foreignKey:'projectId', targetKey: 'id'});
     };
 };

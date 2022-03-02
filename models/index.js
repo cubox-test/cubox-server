@@ -8,6 +8,7 @@ const Supervisor = require('./supervisor');
 const Worker = require('./worker');
 const State = require('./state');
 const Job = require('./job');
+const Project = require('./project');
 
 const db = {};
 const sequelize = new Sequelize(
@@ -22,6 +23,7 @@ db.Worker = Worker;
 db.Supervisor = Supervisor;
 db.State = State;
 db.Job = Job;
+db.Project = Project;
 
 User.init(sequelize);
 Role.init(sequelize);
@@ -30,6 +32,7 @@ Worker.init(sequelize);
 Supervisor.init(sequelize);
 State.init(sequelize);
 Job.init(sequelize);
+Project.init(sequelize);
 
 User.associate(db);
 Role.associate(db);
@@ -38,5 +41,6 @@ Worker.associate(db);
 Supervisor.associate(db);
 State.associate(db);
 Job.associate(db);
+Project.associate(db);
 
 module.exports = db;

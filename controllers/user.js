@@ -14,7 +14,6 @@ exports.GetUserInfo = async (req, res, next) => {
             }],
         });
         
-        console.log(user);
         console.log("유저 정보 조회");
         return res.status(200).send(user);
 
