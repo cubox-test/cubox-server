@@ -1,7 +1,7 @@
 const { Job, Project } = require('../models');
 const { sequelize } = require('../models');
 
-exports.companylist = async (req, res, next) => {
+exports.main = async (req, res, next) => {
     try {
         const query = `select c.id, c.name, count(distinct w.userId) as worker, p.total as total, p.assigned as assigned, p.submitted as submitted\ 
                        from centers c\
@@ -61,8 +61,13 @@ exports.workerinfo = async (req, res, next) => {
                        group by 1, 2, 3;`
         const [result, metadata] = await sequelize.query(query);
 
+        const job = result.map((x) => {
+            x.achievement = parseFloat(x.achievement);
+            return x;
+        });
+
         console.log("Project 별 Worker 배정받은 Job 진행률 리스트 반환");
-        return res.status(200).send(result);
+        return res.status(200).send(job);
     } catch (err) {
         console.log("workerinfo error");
         next(err);
