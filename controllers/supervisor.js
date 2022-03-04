@@ -1,4 +1,4 @@
-const { Job, Project } = require('../models');
+const { Job, Project, User } = require('../models');
 const { sequelize } = require('../models');
 
 exports.main = async (req, res, next) => {
@@ -92,9 +92,24 @@ exports.GetProjects = async (req, res, next) => {
 exports.GetJobs = async (req, res, next) => {
     try {
         const job = await Job.findAll({
-            where : {projectId : req.query.projectId},
-            attributes : [['id', 'jobId'], ['name', 'jobName'], 'total', 'submitted', 'workerId', 'stateId'],
+            where: {projectId : req.query.projectId},
+            attributes: [['id', 'jobId'], ['name', 'jobName'], 'total', 'submitted', 'stateId', 'workerId'],
+            raw : true,
         });
+        
+        for (let i = 0; i < job.length; i++) {
+            const exnickName = await User.findOne({
+                where: {userId : job[i].workerId},
+                attributes: ['nickName'],
+                raw : true,
+            });
+            if(exnickName){
+                job[i].workernickName = exnickName.nickName;
+            } else {
+                job[i].workernickName = 'No_assigned';
+            }
+            delete job[i].workerId;
+        };
 
         console.log("특정 Project 내 Job list 반환");
         return res.status(200).send(job);
