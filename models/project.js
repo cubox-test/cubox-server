@@ -8,15 +8,6 @@ module.exports = class Project extends Sequelize.Model {
                 allowNull: false,
                 unique: true
             },
-            total: {
-                type: Sequelize.INTEGER(5),
-            },
-            assigned: {
-                type: Sequelize.INTEGER(5),
-            },
-            submitted: {
-                type: Sequelize.INTEGER(5),
-            }
         }, {
             sequelize,
             timestamps: false, // createdAt, updatedAt, deleteAt 생성(true)

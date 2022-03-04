@@ -1,4 +1,4 @@
-const { Job, Project, User } = require('../models');
+const { Job, Project, User, Worker } = require('../models');
 const { sequelize } = require('../models');
 
 exports.main = async (req, res, next) => {
@@ -54,20 +54,17 @@ exports.main = async (req, res, next) => {
 
 exports.workerinfo = async (req, res, next) => {
     try {
-        const query = `select j.id, j.name, u.nickName, round((j.submitted / j.total * 100), 2) as achievement\
-                       from jobs j\
-                       left join users u on j.workerId = u.userId\
-                       where j.projectId = '${req.query.projectId}'\
-                       group by 1, 2, 3;`
-        const [result, metadata] = await sequelize.query(query);
-
-        const job = result.map((x) => {
-            x.achievement = parseFloat(x.achievement);
-            return x;
+        const workerlist = await Worker.findAll({
+            where: {centerId : req.query.centerId},
+            attributes: ['workerId'],
+            include: [{
+                model: User,
+                attributes: [['nickName', 'workerNickName']],
+            }]
         });
 
-        console.log("Project 별 Worker 배정받은 Job 진행률 리스트 반환");
-        return res.status(200).send(job);
+        console.log("Worker list 반환");
+        return res.status(200).send(workerlist);
     } catch (err) {
         console.log("workerinfo error");
         next(err);
@@ -105,8 +102,10 @@ exports.GetJobs = async (req, res, next) => {
             });
             if(exnickName){
                 job[i].workernickName = exnickName.nickName;
+                job[i].achievement = parseFloat((job[i].submitted / job[i].total * 100).toFixed(2));
             } else {
                 job[i].workernickName = 'No_assigned';
+                job[i].achievement = 0;
             }
             delete job[i].workerId;
         };

@@ -10,11 +10,11 @@ module.exports = class Center extends Sequelize.Model {
             },
         }, {
             sequelize,
-            timestamps: false, // createdAt, updatedAt, deleteAt 생성(true)
+            timestamps: false,
             underscored: false, 
             modelName: 'Center',
             tableName: 'centers',
-            paranoid: false, // createdAt, updatedAt, deletedAt 생성(true)
+            paranoid: false,
             charset: 'utf8',
             collate: 'utf8_general_ci',
         });
