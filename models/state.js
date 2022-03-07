@@ -21,6 +21,7 @@ module.exports = class State extends Sequelize.Model {
     }
 
     static associate(db){
+        db.State.hasMany(db.Project, {foreignKey:'stateId', sourceKey: 'id'});
         db.State.hasMany(db.Job, {foreignKey:'stateId', sourceKey: 'id'});
     };
 };

@@ -1,6 +1,7 @@
 const { } = require('../models');
 const { sequelize } = require('../models');
 
+// 통과
 exports.main = async (req, res, next) => {
     try {
         const query = `select id as jobId, name as jobName, total, submitted, (total - submitted) as waiting,\
@@ -26,6 +27,7 @@ exports.main = async (req, res, next) => {
         const total = [{"allOfTotal" : allOfTotal, "allOfSubmitted": allOfSubmitted, "allOfWaiting" : allOfWaiting,
                         "allOfAchievement" : parseFloat((allOfSubmitted / allOfTotal * 100).toFixed(2))}];
         
+        console.log("Worker Main Page");
         return res.status(200).send(Object.assign({total : total, jobInfo : result}));
 
     } catch (err) {

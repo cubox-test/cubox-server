@@ -3,79 +3,57 @@ const { sequelize } = require('../models');
 
 exports.main = async (req, res, next) => {
     try {
-        const query = `select c.id, c.name, count(distinct w.userId) as worker, p.total as total, p.assigned as assigned, p.submitted as submitted\ 
-                       from centers c\
-                       left join workers w on c.id = w.centerId\
-                       left join projects p on c.id = p.centerId\
-                       where supervisorId = '${req.user.userId}'\
-                       group by c.name, p.name;`
-        const [result, metadata] = await sequelize.query(query);
-
-        if(!result.length) {
-            return res.status(403).send({"message": "정보가 조회되지 않습니다."});
-        }
-        let centerName = result[0].name;
-        let totalProjects = 0;
-        let assignedProjects = 0;
-        let submittedProjects = 0;
+        const centerQuery = `SELECT c.id as centerId, c.name as centerName,\
+                                count(distinct if(p.stateId=1, p.id, null)) as createdProjects,\ 
+                                count(distinct if(p.stateId=2, p.id, null)) as processingProjects,\
+                                count(distinct if(p.stateId=3, p.id, null)) as finishedProjects, c.stateId as centerStatus\
+                             FROM centers c\
+                             LEFT JOIN workers w ON c.id = w.centerId\
+                             LEFT JOIN projects p ON c.id = p.centerId\
+                             WHERE supervisorId = '${req.user.userId}'\
+                             GROUP BY 1,2;`
         
-        const arr = [];
-        for (let i = 0; i<result.length; i++) {
-            const name = result[i].name;
-            const total = result[i].total;
-            const assigned = result[i].assigned;
-            const submitted = result[i].submitted;
-            
-            if (name == centerName) {
-                totalProjects += total;
-                assignedProjects += assigned;
-                submittedProjects += submitted;
-            } else {
-                arr.push({centerId: result[i-1].id, centerName: centerName, numberOfWorker: result[i-1].worker, totalProjects: totalProjects,
-                    assignedProjects: assignedProjects, submittedProjects: submittedProjects, waitingProjects: (totalProjects - assignedProjects)});
-                centerName = name;
-                totalProjects = 0;
-                assignedProjects = 0;
-                submittedProjects = 0;
+        const [center] = await sequelize.query(centerQuery);
+
+        const info = [];
+        for (const temp_center of center){
+            let result = [];
+            const projectQuery = `SELECT p.id as projectId, p.name as projectName, count(distinct j.id) as totalJobs,\
+                                    count(distinct if(j.stateId=1, j.id, null)) as createdJobs,\
+                                    count(distinct if(j.stateId=2, j.id, null)) as proessingJobs,\
+                                    count(distinct if(j.stateId=3, j.id, null)) as finishedJobs\
+                                  FROM projects p\
+                                  LEFT JOIN jobs j ON p.id = j.projectId\
+                                  WHERE centerId = '${temp_center.centerId}'\
+                                  GROUP BY 1, 2;`
+            const [project] = await sequelize.query(projectQuery);
+
+            for (const temp_project of project){
+                result.push(temp_project);
             }
-            if (i == result.length - 1) {
-                arr.push({centerId: result[i].id, centerName: centerName, numberOfWorker: result[i].worker, totalProjects: totalProjects,
-                    assignedProjects: assignedProjects, submittedProjects: submittedProjects, waitingProjects: (totalProjects - assignedProjects)});
-            }
+            info.push({'center' : temp_center, 'project' : result});
         }
 
         console.log("center list 반환 성공");
-        return res.status(200).send(JSON.stringify(arr));
+        return res.status(200).send(info);
     } catch (err) {
         console.log("companylist error");
         next(err);
     }
 };
 
-exports.workerinfo = async (req, res, next) => {
-    try {
-        const workerlist = await Worker.findAll({
-            where: {centerId : req.query.centerId},
-            attributes: ['workerId'],
-            include: [{
-                model: User,
-                attributes: [['nickName', 'workerNickName']],
-            }]
-        });
 
-        console.log("Worker list 반환");
-        return res.status(200).send(workerlist);
-    } catch (err) {
-        console.log("workerinfo error");
-        next(err);
-    }
-};
 
-exports.GetProjects = async (req, res, next) => {
+/* exports.GetProjects = async (req, res, next) => {
     try {
         const project = await Project.findAll({
             where : { centerId : req.query.centerId },
-            attributes : [['id', 'projectId'], ['name', 'projectName'], 'total', 'submitted'],
+            attributes : [['id', 'projectId'], ['name', 'projectName']],
+            include : [{
+                model: Job,
+                attributes: [[sequelize.fn('COUNT', 'id'), 'total']],
+            }],
+            group: ['projectId', 'projectName']
         });
 
         console.log("센터에 배정된 모든 Project 정보");
@@ -84,8 +62,9 @@ exports.GetProjects = async (req, res, next) => {
         console.log("getprojects error");
         next(err);
     }
-};
+}; */
 
+// 통과
 exports.GetJobs = async (req, res, next) => {
     try {
         const job = await Job.findAll({
@@ -118,6 +97,27 @@ exports.GetJobs = async (req, res, next) => {
     }
 };
 
+// 통과
+exports.workerinfo = async (req, res, next) => {
+    try {
+        const workerlist = await Worker.findAll({
+            where: {centerId : req.query.centerId},
+            attributes: ['workerId'],
+            include: [{
+                model: User,
+                attributes: [['nickName', 'workerNickName']],
+            }]
+        });
+
+        console.log("Worker list 반환");
+        return res.status(200).send(workerlist);
+    } catch (err) {
+        console.log("workerinfo error");
+        next(err);
+    }
+};
+
+// 통과
 exports.assignment = async (req, res, next) => {
     try {
         const { jobId, workerId } = req.body;

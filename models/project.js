@@ -24,5 +24,6 @@ module.exports = class Project extends Sequelize.Model {
         db.Project.hasMany(db.Job, {foreignKey: 'projectId', sourceKey: 'id'});
         db.Project.hasMany(db.Worker, {foreignKey:'projectId', sourceKey: 'id'});
         db.Project.belongsTo(db.Center, {foreignKey:'centerId', sourceKey: 'id'});
+        db.Project.belongsTo(db.State, {foreignKey:'stateId', targetKey: 'id'});
     };
 };
