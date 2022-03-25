@@ -17,7 +17,6 @@ exports.main = async (req, res, next) => {
 
         const info = [];
         for (const temp_center of center){
-            let result = [];
             const projectQuery = `SELECT p.id as projectId, p.name as projectName, count(distinct j.id) as totalJobs,\
                                     count(distinct if(j.stateId=1, j.id, null)) as createdJobs,\
                                     count(distinct if(j.stateId=2, j.id, null)) as proessingJobs,\
@@ -28,13 +27,10 @@ exports.main = async (req, res, next) => {
                                   GROUP BY 1, 2;`
             const [project] = await sequelize.query(projectQuery);
 
-            for (const temp_project of project){
-                result.push(temp_project);
-            }
-            info.push({'center' : temp_center, 'project' : result});
+            info.push({'center' : temp_center, 'project' : project});
         }
 
-        console.log("center list 반환 성공");
+        console.log("Supervisor Main Page 반환 성공");
         return res.status(200).send(info);
     } catch (err) {
         console.log("companylist error");
